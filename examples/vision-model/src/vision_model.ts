@@ -23,16 +23,22 @@ async function main() {
     setLabel("init-label", report.text);
   };
   const selectedModel = "Phi-3.5-vision-instruct-q4f16_1-MLC";
-  const engine: webllm.MLCEngineInterface = await webllm.CreateMLCEngine(
-    selectedModel,
-    {
-      initProgressCallback: initProgressCallback,
-      logLevel: "INFO", // specify the log level
-    },
-    {
-      context_window_size: 6144,
-    },
-  );
+  const worker = new Worker(new URL("./worker.ts", import.meta.url), {
+    type: "module",
+  });
+
+  const engine: webllm.MLCEngineInterface =
+    await webllm.CreateWebWorkerMLCEngine(
+      worker,
+      selectedModel,
+      {
+        initProgressCallback: initProgressCallback,
+        logLevel: "INFO", // specify the log level
+      },
+      {
+        context_window_size: 6144,
+      },
+    );
 
   // 1. Single image input (with choices)
   const messages: webllm.ChatCompletionMessageParam[] = [
